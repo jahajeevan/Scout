@@ -273,12 +273,12 @@ function WorkspaceHome({ userName }: { userName: string }): JSX.Element {
       </header>
 
       <div className="wh-actions" role="list">
-        <QuickAction hotkey="⌘/" label="Ask anything" hint="Start a conversation" tone="terracotta" onClick={() => fire("focus-composer")} />
-        <QuickAction hotkey="⌘K" label="Search" hint="Web · docs · memory" tone="sage" onClick={() => fire("search")} />
-        <QuickAction hotkey="⌘⇧F" label="Open a file" hint="PDF · docx · code · media" tone="copper" onClick={() => fire("open-file")} />
-        <QuickAction hotkey="⌘⇧C" label="Code" hint="Workspace-aware engineering" tone="copper" onClick={() => fire("open-code")} />
-        <QuickAction hotkey="⌘⇧E" label="What's on screen?" hint="See + reason about the active app" tone="amber" onClick={() => fire("see-screen")} />
-        <QuickAction hotkey="⌘⇧A" label="Autonomy" hint="Daemons · approvals · routines" tone="plum" onClick={() => fire("open-autonomy")} />
+        <QuickAction icon="💬" hotkey="⌘/" label="Ask anything" hint="Start a conversation" tone="terracotta" onClick={() => fire("focus-composer")} />
+        <QuickAction icon="🔍" hotkey="⌘K" label="Search" hint="Web · docs · memory" tone="sage" onClick={() => fire("search")} />
+        <QuickAction icon="📄" hotkey="⌘⇧F" label="Open a file" hint="PDF · docx · code · media" tone="copper" onClick={() => fire("open-file")} />
+        <QuickAction icon="⌘" hotkey="⌘⇧C" label="Code" hint="Workspace-aware engineering" tone="copper" onClick={() => fire("open-code")} />
+        <QuickAction icon="👁" hotkey="⌘⇧E" label="What's on screen?" hint="See + reason about the active app" tone="amber" onClick={() => fire("see-screen")} />
+        <QuickAction icon="✦" hotkey="⌘⇧A" label="Autonomy" hint="Daemons · approvals · routines" tone="plum" onClick={() => fire("open-autonomy")} />
       </div>
 
       <TodayPanel />
@@ -287,10 +287,11 @@ function WorkspaceHome({ userName }: { userName: string }): JSX.Element {
 }
 
 function QuickAction({
-  label, hint, hotkey, tone, onClick,
+  label, hint, hotkey, tone, icon, onClick,
 }: {
   label: string; hint: string; hotkey: string;
   tone?: "terracotta" | "sage" | "copper" | "plum" | "amber";
+  icon?: string;
   onClick?: () => void;
 }): JSX.Element {
   return (
@@ -299,6 +300,7 @@ function QuickAction({
       role="listitem"
       onClick={onClick}
       data-tone={tone ?? "terracotta"}
+      data-icon={icon ?? ""}
       type="button"
     >
       <div className="wh-action-main">

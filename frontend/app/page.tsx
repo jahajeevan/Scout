@@ -359,16 +359,17 @@ export default function Home(): JSX.Element {
               {clock}
             </span>
             <ThemeToggle />
-            <Link href="/code" className="iconbtn" title="Code mode">
+            <Link href="/code" className="iconbtn" data-tone="copper" title="Code mode">
               <IconCode />
               <span>Code</span>
             </Link>
-            <Link href="/forge" className="iconbtn" title="Arc Forge — AR gauntlet">
+            <Link href="/forge" className="iconbtn" data-tone="amber" title="Arc Forge — AR gauntlet">
               <IconBolt />
               <span>Forge</span>
             </Link>
             <button
               className="iconbtn"
+              data-tone="sage"
               onClick={() => setViewerPath(process.env.NEXT_PUBLIC_HOME_DIR ?? "/Users/apple")}
               title="Universal file viewer"
             >
@@ -377,6 +378,7 @@ export default function Home(): JSX.Element {
             </button>
             <button
               className="iconbtn"
+              data-tone="plum"
               onClick={() => setAutonomyOpen(true)}
               title="Autonomy — daemons + approval inbox"
             >
@@ -385,6 +387,7 @@ export default function Home(): JSX.Element {
             </button>
             <button
               className="iconbtn"
+              data-tone="plum"
               onClick={() => openSettings("memory")}
               title="Memory — what Scout remembers about you"
             >

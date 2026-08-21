@@ -3707,40 +3707,100 @@ textarea {
   overflow: hidden;
   box-shadow: var(--el-1);
 }
-/* Buttons reset (QuickAction became a real <button>) */
+/* QuickAction tiles — always-colorful, tone-tinted. Each tile carries a
+   real color that reads without hovering — icon block, left border,
+   shortcut badge all tinted to the tile's semantic tone. */
 .wh-action {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 14px;
+  padding: 16px 18px;
   background: var(--surface);
   cursor: pointer;
-  border: none;
-  border-left: 3px solid transparent;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--tile-tone, var(--accent));
+  border-radius: var(--r-3);
   font: inherit;
   text-align: left;
   color: inherit;
   transition: background var(--dur-instant) var(--ease-out),
-              border-left-color var(--dur-instant) var(--ease-out),
-              transform var(--dur-instant) var(--ease-out);
+              transform var(--dur-instant) var(--ease-out),
+              box-shadow var(--dur-instant) var(--ease-out);
   position: relative;
+  box-shadow: var(--el-1);
+}
+.wh-action::before {
+  content: attr(data-icon);
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px;
+  background: color-mix(in oklab, var(--tile-tone, var(--accent)) 14%, transparent);
+  color: var(--tile-tone, var(--accent));
+  font-size: 20px;
+  line-height: 1;
 }
 .wh-action:hover {
   background: var(--surface-2);
-  border-left-color: var(--tile-tone, var(--accent));
+  box-shadow: var(--el-2);
+  transform: translateY(-1px);
 }
-.wh-action:hover .wh-action-key {
-  color: var(--tile-tone, var(--accent));
-  border-color: var(--tile-tone, var(--accent-line));
+.wh-action:hover::before {
+  background: color-mix(in oklab, var(--tile-tone, var(--accent)) 22%, transparent);
 }
-.wh-action:hover .wh-action-label { color: var(--tile-tone, var(--ink)); }
-.wh-action:active { transform: translateY(0.5px); }
+.wh-action:active { transform: translateY(0); }
 .wh-action[data-tone="terracotta"] { --tile-tone: var(--terracotta); }
 .wh-action[data-tone="sage"]       { --tile-tone: var(--sage); }
 .wh-action[data-tone="copper"]     { --tile-tone: var(--copper); }
 .wh-action[data-tone="plum"]       { --tile-tone: var(--plum); }
 .wh-action[data-tone="amber"]      { --tile-tone: var(--amber); }
+
+/* Topbar iconbtns get semantic color per feature — always-visible tint on
+   the icon glyph, background lifts on hover. Neutral (no data-tone) stays
+   ink-quiet for utility buttons like System. */
+.iconbtn[data-tone="terracotta"] { color: var(--terracotta); }
+.iconbtn[data-tone="sage"]       { color: var(--sage); }
+.iconbtn[data-tone="copper"]     { color: var(--copper); }
+.iconbtn[data-tone="plum"]       { color: var(--plum); }
+.iconbtn[data-tone="amber"]      { color: var(--amber); }
+.iconbtn[data-tone] span { color: inherit; opacity: 0.92; }
+.iconbtn[data-tone] svg { color: inherit; }
+.iconbtn[data-tone]:hover {
+  background: color-mix(in oklab, currentColor 10%, transparent);
+}
+
+/* Tile key badge in the tone color so the shortcut also carries the accent */
+.wh-action .wh-action-key {
+  color: var(--tile-tone, var(--ink-quiet));
+  border-color: color-mix(in oklab, var(--tile-tone, var(--accent)) 30%, transparent);
+  background: color-mix(in oklab, var(--tile-tone, var(--accent)) 8%, var(--surface-3));
+  font-weight: 600;
+}
+
+/* The action-main takes flex:1 so key badge sits on the right */
+.wh-action .wh-action-main { flex: 1; min-width: 0; }
+.wh-action .wh-action-label {
+  color: var(--ink);
+  font-weight: 600;
+  font-size: 14px;
+}
+.wh-action .wh-action-hint {
+  color: var(--ink-soft);
+  font-size: 12.5px;
+  margin-top: 2px;
+}
+
+/* Un-flatten the grid — no more 1px "border" between cells; real gaps + shadows */
+.wh-actions {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  overflow: visible !important;
+  box-shadow: none !important;
+}
 .wh-action-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .wh-action-label {
   font-size: 13px;

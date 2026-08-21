@@ -1,0 +1,35 @@
+{
+  "package": "com.oplus.consumerIRApp",
+  "adb_address": "",
+  "nav_delay_ms": 2500,
+  "devices": {
+    "ac": {
+      "label": "AC",
+      "aliases": ["ac", "a/c", "air conditioner", "air condition", "air conditioning", "toshiba"],
+      "card": [284, 800],
+      "power_is_toggle": true,
+      "buttons": {
+        "power": [284, 1158],
+        "swing": [799, 1158],
+        "temp_up": [926, 1400],
+        "temp_down": [115, 1400]
+      }
+    },
+    "fan": {
+      "label": "fan",
+      "aliases": ["fan", "atomberg"],
+      "card": [284, 1404],
+      "power_is_toggle": true,
+      "buttons": {
+        "power": [287, 1270],
+        "more": [793, 1752],
+        "boost": {"via": "more", "tap": [299, 1162]},
+        "speed_1": {"via": "more", "tap": [780, 1162]},
+        "speed_2": {"via": "more", "tap": [299, 1379]},
+        "speed_3": {"via": "more", "tap": [780, 1379]},
+        "speed_4": {"via": "more", "tap": [299, 1595]},
+        "speed_5": {"via": "more", "tap": [780, 1595]}
+      }
+    }
+  }
+}

@@ -1,0 +1,109 @@
+# ─── Secrets & credentials (NEVER commit) ─────────────────────────────
+.env
+.env.*
+!.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+
+# Google OAuth — real client secret + refresh token
+google_credentials.json
+google_credentials*.json
+config/google_credentials.json
+config/google_token.json
+
+# Spotify / integration caches
+.spotify_cache
+config/.scout_onboarded
+
+# ─── User data (personal, private) ────────────────────────────────────
+# SQLite databases hold indexed documents, memories, routines, reminders
+config/*.db
+config/*.db-journal
+config/*.db-wal
+config/*.db-shm
+config/scout_settings.json
+config/scout_workspace.json
+
+# ─── Python ───────────────────────────────────────────────────────────
+.venv/
+.venv-*/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ─── Node / Next.js ───────────────────────────────────────────────────
+node_modules/
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+.turbo/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ─── macOS app builds (py2app) ────────────────────────────────────────
+macos/build/
+macos/dist/
+Scout.app/
+*.dmg
+
+# ─── Model assets (large — download separately) ───────────────────────
+backend/voice/models/*.onnx
+backend/voice/models/*.bin
+backend/voice/models/*.pt
+macos/assets/vosk-model/
+macos/assets/*.onnx
+macos/assets/*.tflite
+models/
+*.onnx
+*.pth
+*.gguf
+*.safetensors
+*.mlx
+
+# Whisper local cache
+~/.cache/whisper/
+
+# ─── OS / editor cruft ────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+!.vscode/settings.example.json
+
+# ─── Logs / runtime ───────────────────────────────────────────────────
+*.log
+/tmp/scout_*.log
+logs/
+.pm2/
+
+# ─── Test / coverage ──────────────────────────────────────────────────
+coverage/
+.coverage
+htmlcov/
+.nyc_output/
+
+# ─── Separate projects (not part of Scout) ────────────────────────────
+Jarvis ios/
+
+# ─── Ephemeral generated files ────────────────────────────────────────
+*.tmp
+*.bak
+*.orig
+.claude/

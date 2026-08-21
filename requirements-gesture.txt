@@ -1,0 +1,17 @@
+# Scout — gesture control deps (Phase 3, optional).
+#
+# MediaPipe hand tracking requires numpy<2, which conflicts with the main
+# backend (kokoro-onnx needs numpy>=2). We keep it in a separate venv:
+#
+#   python3.11 -m venv .venv-gesture
+#   source .venv-gesture/bin/activate
+#   pip install -r requirements-gesture.txt
+#   python -m backend.gesture.tracker
+#
+# macOS will prompt for camera access on first run. Test without a camera
+# with `python -m backend.gesture.tracker --simulate`.
+
+numpy==1.26.4
+mediapipe==0.10.14
+opencv-python==4.10.0.84
+websockets==12.0

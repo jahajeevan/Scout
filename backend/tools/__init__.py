@@ -8,6 +8,7 @@ from backend.tools.base import PermissionLevel, Tool, ToolRegistry, ToolResult
 from backend.tools import (
     code_tools,
     doc_tools,
+    gif_tools,
     mac_tools,
     memory_tools,
     productivity_tools,
@@ -27,6 +28,7 @@ code_tools.register(registry)
 productivity_tools.register(registry)
 routine_tools.register(registry)
 vision_tools.register(registry)
+gif_tools.register(registry)
 # media_tools, vision_tools register here as they land.
 
 __all__ = ["registry", "Tool", "ToolRegistry", "ToolResult", "PermissionLevel"]

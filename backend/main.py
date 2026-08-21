@@ -1112,6 +1112,34 @@ async def vision_chat(
     return {"ok": True, "reply": result.text, "model": spec.id}
 
 
+# --- GIF search (Tenor v2) --------------------------------------------------
+
+@app.get("/gif/search")
+async def gif_search(q: str, limit: int = 20) -> dict[str, object]:
+    """Search Tenor for animated GIFs. Requires TENOR_API_KEY in .env."""
+    from backend.integrations import gif as _gif
+    if not _gif.is_configured():
+        return {"gifs": [], "configured": False, "error": "TENOR_API_KEY not set."}
+    try:
+        gifs = await _gif.search(q, limit)
+    except Exception as exc:
+        return {"gifs": [], "configured": True, "error": f"Tenor error: {str(exc)[:140]}"}
+    return {"gifs": gifs, "configured": True}
+
+
+@app.get("/gif/trending")
+async def gif_trending(limit: int = 20) -> dict[str, object]:
+    """Popular GIFs — what the picker shows before you type anything."""
+    from backend.integrations import gif as _gif
+    if not _gif.is_configured():
+        return {"gifs": [], "configured": False, "error": "TENOR_API_KEY not set."}
+    try:
+        gifs = await _gif.trending(limit)
+    except Exception as exc:
+        return {"gifs": [], "configured": True, "error": f"Tenor error: {str(exc)[:140]}"}
+    return {"gifs": gifs, "configured": True}
+
+
 # --- Documents / RAG (spec §14) ---------------------------------------------
 
 

@@ -52,7 +52,7 @@ const BACKEND_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
 interface UseJarvis {
   connected: boolean;
   generating: boolean;
-  sendMessage: (text: string, web?: boolean) => void;
+  sendMessage: (text: string, web?: boolean, gifs?: string[]) => void;
   stop: () => void;
   confirmAction: (approve: boolean) => void;
 }
@@ -140,10 +140,11 @@ export function useJARVIS(
   }, [connect]);
 
   const sendMessage = useCallback(
-    (text: string, web = false): void => {
+    (text: string, web = false, gifs: string[] = []): void => {
       const trimmed = text.trim();
       const ws = wsRef.current;
-      if (!trimmed || !ws || ws.readyState !== WebSocket.OPEN) return;
+      // Allow gif-only sends: at least one of trimmed text OR gifs is required.
+      if ((!trimmed && gifs.length === 0) || !ws || ws.readyState !== WebSocket.OPEN) return;
       // One generation at a time (spec §4) — the composer enforces this too.
       if (streamIdRef.current !== null) return;
 
@@ -152,12 +153,26 @@ export function useJARVIS(
       streamIdRef.current = jarvisId;
       setGenerating(true);
 
+      // The user message carries the GIF URL(s) as `images` so the chat
+      // renders them inline. The backend gets an augmented text so Scout
+      // knows what GIF(s) the user sent — otherwise it can't react to them.
+      const userMsg = {
+        id: userId,
+        role: "user" as const,
+        text: trimmed,
+        streaming: false,
+        ...(gifs.length ? { images: gifs } : {}),
+      };
       setMessages((prev) => [
         ...prev,
-        { id: userId, role: "user", text: trimmed, streaming: false },
+        userMsg,
         { id: jarvisId, role: "jarvis", text: "", streaming: true },
       ]);
-      ws.send(JSON.stringify({ message: trimmed, web }));
+
+      const backendText = gifs.length
+        ? `${trimmed}${trimmed ? "\n\n" : ""}[User sent a GIF: ${gifs.join(", ")}]`
+        : trimmed;
+      ws.send(JSON.stringify({ message: backendText, web }));
     },
     [setMessages, idRef],
   );

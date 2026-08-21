@@ -6,6 +6,8 @@ import type { ModelInfo } from "@/hooks/useModels";
 import type { VoiceStatus } from "@/hooks/useVoice";
 import { colors } from "@/lib/tokens";
 import ModelSelector from "@/components/ModelSelector";
+import EmojiPicker from "@/components/EmojiPicker";
+import GifPicker from "@/components/GifPicker";
 // Orb removed — voice state is now shown as an inline waveform (see VoiceWaveform below).
 import {
   IconArrowUp,
@@ -89,7 +91,7 @@ interface Props {
   models: ModelInfo[];
   active: ModelInfo | null;
   onSelectModel: (id: string) => void;
-  onSend: (text: string, web: boolean) => void;
+  onSend: (text: string, web: boolean, gifs?: string[]) => void;
   onSendAttachments: (files: File[], previews: string[], prompt: string) => void;
   onGenerateImage: (prompt: string) => void;
   liveActive: boolean;
@@ -120,12 +122,53 @@ export default function Composer({
   const [imageMode, setImageMode] = useState(false);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [docs, setDocs] = useState<DocAtt[]>([]);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [gifOpen, setGifOpen] = useState(false);
+  const [gifAttachments, setGifAttachments] = useState<{ id: number; url: string; title: string }[]>([]);
   const taRef = useRef<HTMLTextAreaElement | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
   const docRef = useRef<HTMLInputElement | null>(null);
   const addRef = useRef<HTMLDivElement | null>(null);
+  const emojiRef = useRef<HTMLDivElement | null>(null);
+  const gifRef = useRef<HTMLDivElement | null>(null);
   const attachId = useRef(0);
   const docId = useRef(0);
+  const gifId = useRef(0);
+
+  // Insert an emoji at the current cursor position of the textarea.
+  const insertEmoji = (emoji: string): void => {
+    const ta = taRef.current;
+    if (!ta) { setDraft((d) => d + emoji); return; }
+    const start = ta.selectionStart ?? draft.length;
+    const end = ta.selectionEnd ?? draft.length;
+    const next = draft.slice(0, start) + emoji + draft.slice(end);
+    setDraft(next);
+    requestAnimationFrame(() => {
+      ta.focus();
+      const pos = start + emoji.length;
+      ta.setSelectionRange(pos, pos);
+    });
+  };
+
+  const addGifAttachment = (url: string, title: string): void => {
+    setGifAttachments((prev) => [...prev, { id: ++gifId.current, url, title }]);
+    setGifOpen(false);
+  };
+  const removeGifAttachment = (id: number): void => {
+    setGifAttachments((prev) => prev.filter((g) => g.id !== id));
+  };
+
+  // Close pickers when clicking outside
+  useEffect(() => {
+    if (!emojiOpen && !gifOpen) return;
+    const onDoc = (e: MouseEvent) => {
+      const t = e.target as Node;
+      if (emojiOpen && emojiRef.current && !emojiRef.current.contains(t)) setEmojiOpen(false);
+      if (gifOpen && gifRef.current && !gifRef.current.contains(t)) setGifOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [emojiOpen, gifOpen]);
 
   const canSee = !!active?.vision;
   const canSearch = !!active?.tools; // tool-capable → can search web AND documents
@@ -135,7 +178,7 @@ export default function Composer({
   const anyProcessing = attachments.some((a) => a.status === "processing");
   const anyDocUploading = docs.some((d) => d.status === "uploading");
   const readyAtts = attachments.filter((a) => a.status === "ready");
-  const hasTray = attachments.length > 0 || docs.length > 0;
+  const hasTray = attachments.length > 0 || docs.length > 0 || gifAttachments.length > 0;
 
   useEffect(() => {
     if (!addOpen) return;
@@ -263,6 +306,14 @@ export default function Composer({
       requestAnimationFrame(grow);
       return;
     }
+    // GIFs (from the picker) get sent as images alongside optional text.
+    if (gifAttachments.length > 0) {
+      onSend(t, webOn, gifAttachments.map((g) => g.url));
+      setGifAttachments([]);
+      setDraft("");
+      requestAnimationFrame(grow);
+      return;
+    }
     if (!t) return;
     onSend(t, webOn);
     setDraft("");
@@ -322,7 +373,8 @@ export default function Composer({
   }
 
   const sendDisabled =
-    !connected || anyProcessing || anyDocUploading || (readyAtts.length === 0 && !draft.trim());
+    !connected || anyProcessing || anyDocUploading ||
+    (readyAtts.length === 0 && gifAttachments.length === 0 && !draft.trim());
 
   return (
     <div className="composer-wrap">
@@ -358,6 +410,16 @@ export default function Composer({
                 {a.status === "processing" ? <span className="attach-spin" /> : null}
                 {a.status === "failed" ? <span className="attach-fail">!</span> : null}
                 <button className="attach-remove" onClick={() => removeAttachment(a.id)} title="Remove" aria-label="Remove attachment">
+                  <IconClose size={12} />
+                </button>
+              </div>
+            ))}
+            {gifAttachments.map((g) => (
+              <div key={`gif-${g.id}`} className="attach-chip gif ready" title={g.title || "GIF"}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={g.url} alt={g.title || "GIF"} />
+                <span className="gif-badge">GIF</span>
+                <button className="attach-remove" onClick={() => removeGifAttachment(g.id)} title="Remove GIF" aria-label="Remove GIF">
                   <IconClose size={12} />
                 </button>
               </div>
@@ -461,6 +523,38 @@ export default function Composer({
             <IconSparkles />
             <span>Image</span>
           </button>
+
+          {/* Emoji picker — insert at cursor */}
+          <div ref={emojiRef} style={{ position: "relative" }}>
+            <button
+              className={`webtoggle emojitoggle ${emojiOpen ? "on" : ""}`}
+              onClick={() => { setEmojiOpen((v) => !v); setGifOpen(false); }}
+              title="Emoji"
+              aria-pressed={emojiOpen}
+              type="button"
+            >
+              <span style={{ fontSize: 16, lineHeight: 1 }}>😀</span>
+            </button>
+            {emojiOpen ? (
+              <EmojiPicker onPick={insertEmoji} onClose={() => setEmojiOpen(false)} />
+            ) : null}
+          </div>
+
+          {/* GIF picker — Tenor */}
+          <div ref={gifRef} style={{ position: "relative" }}>
+            <button
+              className={`webtoggle giftoggle ${gifOpen ? "on" : ""}`}
+              onClick={() => { setGifOpen((v) => !v); setEmojiOpen(false); }}
+              title="Send a GIF"
+              aria-pressed={gifOpen}
+              type="button"
+            >
+              <span style={{ fontWeight: 700, letterSpacing: "0.02em" }}>GIF</span>
+            </button>
+            {gifOpen ? (
+              <GifPicker onPick={addGifAttachment} onClose={() => setGifOpen(false)} />
+            ) : null}
+          </div>
 
           <ModelSelector models={models} active={active} onSelect={onSelectModel} />
 

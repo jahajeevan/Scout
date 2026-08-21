@@ -102,8 +102,8 @@ Prerequisites: **macOS Apple Silicon**, **Python 3.11**, **Node.js 20+**, a
 free **NVIDIA NIM API key** from [build.nvidia.com](https://build.nvidia.com).
 
 ```bash
-git clone https://github.com/jahajeevan/scout.git
-cd scout
+git clone https://github.com/jahajeevan/Scout.git
+cd Scout
 
 # 1. Backend deps
 python3.11 -m venv .venv

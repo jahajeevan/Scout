@@ -27,6 +27,7 @@ OPTIONS = {
         "NSMicrophoneUsageDescription": "Scout listens for “Hey Scout” and your voice commands.",
         "NSSpeechRecognitionUsageDescription": "Scout transcribes your speech locally on your Mac.",
         "NSAppleEventsUsageDescription": "Scout opens and controls the apps you ask it to.",
+        "NSCameraUsageDescription": "Scout uses your camera for the Arc Forge AR gauntlet and vision features.",
         "NSAppTransportSecurity": {"NSAllowsLocalNetworking": True},
     },
     "packages": ["rumps", "sounddevice", "vosk", "numpy", "httpx", "httpcore",

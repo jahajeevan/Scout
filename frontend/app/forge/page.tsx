@@ -112,7 +112,7 @@ export default function ForgePage(): JSX.Element {
       lmkRef.current = await make("GPU").catch(() => make("CPU"));
       setStarted(true);
       sound.sfx("chime");
-      setStatus("Raise your hand to forge the gauntlet, sir.");
+      setStatus("Raise your hand to forge the gauntlet.");
       loop();
     } catch (e) {
       setError(`Optics failed: ${(e as Error).message}. Allow camera access and retry.`);
@@ -388,7 +388,7 @@ export default function ForgePage(): JSX.Element {
       ctx.restore();
     }
 
-    if (hands.length === 0) { chargeRef.current *= 0.9; sound.setHum(false); wasFireRef.current = false; asmDoneRef.current = false; say("Raise your hand to forge the gauntlet, sir."); setWeap("STANDBY"); }
+    if (hands.length === 0) { chargeRef.current *= 0.9; sound.setHum(false); wasFireRef.current = false; asmDoneRef.current = false; say("Raise your hand to forge the gauntlet."); setWeap("STANDBY"); }
     if (asm > 0.85 && !asmDoneRef.current && hands.length) {
       asmDoneRef.current = true; sound.sfx("rev");
       const p = hands[0].map(map)[9]; emit(parts.current, p.x, p.y, 24, W * 0.02, GOLD_HOT, 3);

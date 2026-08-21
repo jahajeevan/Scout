@@ -1,8 +1,9 @@
 # Scout — Architecture
 
 This document is the "how it actually works" reference for the Scout codebase.
-It replaces the older phase-by-phase `ARCHITECTURE_MIGRATION.md`, which is
-kept for historical context but no longer reflects current state.
+It replaces the older phase-by-phase migration log (kept at
+[`docs/legacy/ARCHITECTURE_MIGRATION.md`](docs/legacy/ARCHITECTURE_MIGRATION.md)
+for historical context), which no longer reflects current state.
 
 ## Table of contents
 
@@ -463,4 +464,5 @@ model — see [Voice pipeline](#voice-pipeline).
 ---
 
 *For historical context on how each of these systems was built and what
-was removed along the way, see `ARCHITECTURE_MIGRATION.md`.*
+was removed along the way, see
+[`docs/legacy/ARCHITECTURE_MIGRATION.md`](docs/legacy/ARCHITECTURE_MIGRATION.md).*

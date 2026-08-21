@@ -37,9 +37,9 @@ async def handle_command(text: str) -> str | None:
 
         fact = re.sub(r"^(?:hey jarvis[, ]*)?remember (?:that )?", "", text.strip(), flags=re.I).strip().rstrip(".")
         if not fact:
-            return "Remember what, sir?"
+            return "Remember what?"
         ok = await get_memory().add(fact)
-        return "I'll remember that, sir." if ok else "I couldn't save that to memory, sir."
+        return "I'll remember that." if ok else "I couldn't save that to memory."
 
     # ---- Email ------------------------------------------------------------
     if _has(low, "unread email", "new email", "new mail", "any email", "any new",
@@ -48,13 +48,13 @@ async def handle_command(text: str) -> str | None:
 
         data = await asyncio.to_thread(gmail.get_summary, 3)
         if not data.get("authorized"):
-            return "I'm not connected to your email yet, sir."
+            return "I'm not connected to your email yet."
         unread = int(data.get("unread", 0))
         msgs = data.get("messages", [])
         if unread == 0:
-            return "Your inbox is clear, sir — no unread emails."
+            return "Your inbox is clear — no unread emails."
         latest = "; ".join(f"{m['from']} — {m['subject']}" for m in msgs)
-        return f"You have {unread} unread email{'s' if unread != 1 else ''}, sir. The latest: {latest}."
+        return f"You have {unread} unread email{'s' if unread != 1 else ''}. The latest: {latest}."
 
     # ---- Calendar ---------------------------------------------------------
     if _has(low, "my calendar", "my schedule", "my agenda", "upcoming event",
@@ -63,12 +63,12 @@ async def handle_command(text: str) -> str | None:
 
         data = await asyncio.to_thread(calendar.get_upcoming, 5)
         if not data.get("authorized"):
-            return "I'm not connected to your calendar yet, sir."
+            return "I'm not connected to your calendar yet."
         events = data.get("events", [])
         if not events:
-            return "Nothing on your calendar coming up, sir."
+            return "Nothing on your calendar coming up."
         listed = "; ".join(f"{e['time']} {e['title']}" for e in events)
-        return f"Your upcoming events, sir: {listed}."
+        return f"Your upcoming events: {listed}."
 
     # ---- Spotify: play <something> ---------------------------------------
     match = re.match(r"(?:can you |please )?play (.+)", low)
@@ -78,9 +78,9 @@ async def handle_command(text: str) -> str | None:
 
         ok = await asyncio.to_thread(spotify.play_search, query)
         return (
-            f"Playing {query}, sir."
+            f"Playing {query}."
             if ok
-            else "I couldn't start playback, sir — Spotify needs Premium and an active device."
+            else "I couldn't start playback — Spotify needs Premium and an active device."
         )
 
     # ---- Spotify: transport controls -------------------------------------
@@ -88,17 +88,17 @@ async def handle_command(text: str) -> str | None:
         from backend.integrations import spotify
 
         ok = await asyncio.to_thread(spotify.control, "pause")
-        return "Paused, sir." if ok else "I couldn't pause, sir."
+        return "Paused." if ok else "I couldn't pause."
     if low in ("next", "next song", "next track", "skip", "skip song", "skip this"):
         from backend.integrations import spotify
 
         ok = await asyncio.to_thread(spotify.control, "next")
-        return "Skipping ahead, sir." if ok else "I couldn't skip, sir."
+        return "Skipping ahead." if ok else "I couldn't skip."
     if low in ("previous", "previous song", "previous track", "go back", "last song"):
         from backend.integrations import spotify
 
         ok = await asyncio.to_thread(spotify.control, "previous")
-        return "Going back, sir." if ok else "I couldn't do that, sir."
+        return "Going back." if ok else "I couldn't do that."
 
     # ---- Spotify: what's playing -----------------------------------------
     if _has(low, "what's playing", "whats playing", "what song", "current song", "now playing"):
@@ -106,10 +106,10 @@ async def handle_command(text: str) -> str | None:
 
         data = await asyncio.to_thread(spotify.get_now_playing)
         if not data.get("authorized"):
-            return "I'm not connected to Spotify yet, sir."
+            return "I'm not connected to Spotify yet."
         if not data.get("playing"):
-            return "Nothing is playing right now, sir."
-        return f"Now playing {data.get('track')} by {data.get('artist')}, sir."
+            return "Nothing is playing right now."
+        return f"Now playing {data.get('track')} by {data.get('artist')}."
 
     # ---- Screen / app vision — real capture + vision model (works with ANY chat
     # model, including tool-less vision models). If the user names an app we bring
@@ -145,7 +145,7 @@ async def handle_command(text: str) -> str | None:
         from backend.integrations import phone
 
         result = await phone.a_press("fan", "boost")
-        return "Boosting the fan, sir." if result.get("ok") else f"I couldn't set the fan, sir — {result.get('reason', 'the command failed')}."
+        return "Boosting the fan." if result.get("ok") else f"I couldn't set the fan — {result.get('reason', 'the command failed')}."
 
     speed = re.search(r"fan speed (?:to )?([1-5])", low) or re.search(r"set (?:the )?fan (?:speed )?to ([1-5])", low)
     if speed:
@@ -153,23 +153,23 @@ async def handle_command(text: str) -> str | None:
 
         n = speed.group(1)
         result = await phone.a_press("fan", f"speed_{n}")
-        return f"Fan speed {n}, sir." if result.get("ok") else f"I couldn't set the fan, sir — {result.get('reason', 'the command failed')}."
+        return f"Fan speed {n}." if result.get("ok") else f"I couldn't set the fan — {result.get('reason', 'the command failed')}."
 
     # ---- Phase 7: AC temperature + swing (phone IR) -----------------------
     _is_ac = re.search(r"\b(a/?c|air ?condition\w*|air conditioner)\b", low) is not None
     if _is_ac:
         ac_btn = None
         if _has(low, "warmer", "hotter", "increase", "raise", "temp up", "temperature up"):
-            ac_btn = ("temp_up", "Raising the AC temperature, sir.")
+            ac_btn = ("temp_up", "Raising the AC temperature.")
         elif _has(low, "cooler", "colder", "decrease", "lower", "reduce", "temp down", "temperature down"):
-            ac_btn = ("temp_down", "Lowering the AC temperature, sir.")
+            ac_btn = ("temp_down", "Lowering the AC temperature.")
         elif _has(low, "swing"):
-            ac_btn = ("swing", "Toggling the AC swing, sir.")
+            ac_btn = ("swing", "Toggling the AC swing.")
         if ac_btn:
             from backend.integrations import phone
 
             result = await phone.a_press("ac", ac_btn[0])
-            return ac_btn[1] if result.get("ok") else f"I couldn't reach the AC, sir — {result.get('reason', 'the command failed')}."
+            return ac_btn[1] if result.get("ok") else f"I couldn't reach the AC — {result.get('reason', 'the command failed')}."
 
     # ---- Phase 6/7: on/off ("turn on the ac / fan / lamp") ----------------
     ha_match = re.match(r"(?:turn|switch) (on|off) (?:the )?(.+)", low)
@@ -186,21 +186,21 @@ async def handle_command(text: str) -> str | None:
             if result.get("ok"):
                 label = "AC" if ir_key == "ac" else device
                 if result.get("toggle"):
-                    return f"Toggling the {label} power, sir."
-                return f"Turning {'on' if on else 'off'} the {label}, sir."
-            return f"I couldn't reach the {device}, sir — {result.get('reason', 'the command failed')}."
+                    return f"Toggling the {label} power."
+                return f"Turning {'on' if on else 'off'} the {label}."
+            return f"I couldn't reach the {device} — {result.get('reason', 'the command failed')}."
 
         # Otherwise fall through to Home Assistant (Phase 6).
         from backend.integrations import home_assistant
 
         result = await home_assistant.set_by_name(device, on)
         if result.get("ok"):
-            return f"Turning {'on' if on else 'off'} the {result.get('name')}, sir."
+            return f"Turning {'on' if on else 'off'} the {result.get('name')}."
         reason = result.get("reason")
         if reason == "not connected":
-            return "I'm not connected to your smart home yet, sir."
+            return "I'm not connected to your smart home yet."
         if reason == "no matching device":
-            return f"I couldn't find a device called '{device}', sir."
-        return f"I couldn't do that, sir — {reason or 'the command failed'}."
+            return f"I couldn't find a device called '{device}'."
+        return f"I couldn't do that — {reason or 'the command failed'}."
 
     return None

@@ -876,8 +876,31 @@ class ScoutWindow:
                 ):
                     handler(default_text or "")
 
+                # Grant camera + mic to our own local web UI (Arc Forge AR uses
+                # getUserMedia). Without this delegate, WKWebView refuses
+                # capture, which on some macOS versions crashes the WebContent
+                # process — and if the crash isn't caught (see NavDelegate
+                # below), it takes Scout.app down with it. WKPermissionDecision:
+                # 0=prompt (unavailable here), 1=grant, 2=deny.
+                def webView_requestMediaCapturePermissionForOrigin_initiatedByFrame_type_decisionHandler_(
+                    self, wv, origin, frame, media_type, handler
+                ):
+                    handler(1)  # WKPermissionDecisionGrant
+
+            class _NavDelegate(NSObject):
+                # Crash guard: if the WebContent process dies (e.g. mediapipe
+                # OOM in Arc Forge, or an unhandled JS crash) reload the page
+                # in place instead of letting the whole native app die.
+                def webViewWebContentProcessDidTerminate_(self, wv):
+                    try:
+                        wv.reload()
+                    except Exception:
+                        pass
+
             self._uidelegate = _UIDelegate.alloc().init()
+            self._navdelegate = _NavDelegate.alloc().init()
             web.setUIDelegate_(self._uidelegate)
+            web.setNavigationDelegate_(self._navdelegate)
             win.setContentView_(web)
             self._win = win
             self._web = web

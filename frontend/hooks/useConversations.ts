@@ -175,6 +175,15 @@ export function useConversations(): UseConversations {
   }, [activeId, ready]);
 
   const newConversation = useCallback(() => {
+    // If we already have an empty untitled convo (e.g. from the previous launch),
+    // just activate it instead of stacking another one — keeps the sidebar clean.
+    const existingEmpty = conversations.find(
+      (c) => c.title === NEW_TITLE && c.messages.length === 0 && !c.archived,
+    );
+    if (existingEmpty) {
+      setActiveId(existingEmpty.id);
+      return;
+    }
     const now = Date.now();
     const c: Conversation = {
       id: uid(),
@@ -188,7 +197,7 @@ export function useConversations(): UseConversations {
     setConversations((prev) => sortConvos([c, ...prev]));
     setActiveId(c.id);
     persist(c);
-  }, [persist]);
+  }, [conversations, persist]);
 
   const select = useCallback(
     (id: string): ChatMessage[] => {

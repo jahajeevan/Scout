@@ -10,7 +10,6 @@ import Settings from "@/components/Settings";
 import Autonomy from "@/components/Autonomy";
 import FileViewer from "@/components/FileViewer";
 import StatusBar from "@/components/StatusBar";
-import ContextPanel from "@/components/ContextPanel";
 import { IconSliders, IconPanelLeft, IconCode, IconFolder, IconSparkles, IconBolt } from "@/components/icons";
 import ThemeToggle from "@/components/ThemeToggle";
 import { useJARVIS, type ChatMessage } from "@/hooks/useJARVIS";
@@ -54,11 +53,17 @@ export default function Home(): JSX.Element {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsSection, setSettingsSection] = useState<"voice" | "connectors" | "mcp" | "routines" | "memory" | "about" | undefined>(undefined);
   const [autonomyOpen, setAutonomyOpen] = useState(false);
-  const [contextOpen, setContextOpen] = useState(false);
   const [autonomyInboxBadge, setAutonomyInboxBadge] = useState<number>(0);
   const [viewerPath, setViewerPath] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(true);
+
+  const openSettings = (sec?: "voice" | "connectors" | "mcp" | "routines" | "memory" | "about"): void => {
+    setSettingsSection(sec);
+    setSettingsOpen(true);
+    setDrawerOpen(false);
+  };
 
   // Pull the pending-proposal count for the sidebar nav badge.
   useEffect(() => {
@@ -103,14 +108,14 @@ export default function Home(): JSX.Element {
     return () => mq.removeEventListener("change", apply);
   }, []);
 
-  // Load the active conversation's messages once history is ready.
+  // Every launch opens a fresh new-conversation home screen — the last chat
+  // stays in the sidebar (user can click to reopen) but isn't auto-loaded.
   useEffect(() => {
     if (!convos.ready || hydrated.current) return;
     hydrated.current = true;
-    if (convos.active) {
-      setMessages(convos.active.messages);
-      idRef.current = maxId(convos.active.messages);
-    }
+    convos.newConversation();
+    setMessages([]);
+    idRef.current = 0;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [convos.ready]);
 
@@ -159,6 +164,87 @@ export default function Home(): JSX.Element {
     load();
     const id = window.setInterval(load, 60000);
     return () => window.clearInterval(id);
+  }, []);
+
+  // Focus the composer's textarea. Composer listens for this custom event.
+  const focusComposer = (prefill?: string): void => {
+    window.dispatchEvent(new CustomEvent("scout:composer-focus", { detail: { prefill } }));
+  };
+  // Open a new blank conversation (same behavior as sidebar "New").
+  const openNewConversation = (): void => {
+    newConversation();
+  };
+
+  // Global keyboard shortcuts + tile-event listeners. One source of truth so
+  // clicking a home tile and pressing its shortcut do exactly the same thing.
+  useEffect(() => {
+    const isTypingInTextField = (t: EventTarget | null): boolean => {
+      if (!(t instanceof HTMLElement)) return false;
+      const tag = t.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || t.isContentEditable;
+    };
+
+    const onKeyDown = (e: KeyboardEvent): void => {
+      // Only handle Cmd (mac) / Ctrl (other). Never hijack the OS.
+      const cmd = e.metaKey || e.ctrlKey;
+      if (!cmd) return;
+      const key = e.key.toLowerCase();
+      const shift = e.shiftKey;
+
+      // ⌘,  → open Settings (macOS convention)
+      if (key === "," && !shift) {
+        e.preventDefault();
+        openSettings();
+        return;
+      }
+      // ⌘/  → focus composer to ask anything (works even while typing elsewhere)
+      if (key === "/" && !shift) {
+        e.preventDefault();
+        focusComposer();
+        return;
+      }
+      // ⌘K  → search (focus composer, hint to enable web)
+      if (key === "k" && !shift) {
+        e.preventDefault();
+        focusComposer();
+        window.dispatchEvent(new CustomEvent("scout:enable-web"));
+        return;
+      }
+      // Cmd+Shift shortcuts — avoid clobbering browser defaults for typing
+      if (shift) {
+        if (key === "f") { e.preventDefault(); setViewerPath(process.env.NEXT_PUBLIC_HOME_DIR ?? "/Users/apple"); return; }
+        if (key === "c") { e.preventDefault(); window.location.href = "/code"; return; }
+        if (key === "e") { e.preventDefault(); focusComposer("What's on my screen?"); return; }
+        if (key === "a") { e.preventDefault(); setAutonomyOpen(true); return; }
+      }
+    };
+
+    // Tile clicks fire custom events (see Conversation.tsx WorkspaceHome).
+    const onFocusComposer = (): void => focusComposer();
+    const onSearch = (): void => { focusComposer(); window.dispatchEvent(new CustomEvent("scout:enable-web")); };
+    const onOpenFile = (): void => setViewerPath(process.env.NEXT_PUBLIC_HOME_DIR ?? "/Users/apple");
+    const onOpenCode = (): void => { window.location.href = "/code"; };
+    const onSeeScreen = (): void => focusComposer("What's on my screen?");
+    const onOpenAutonomy = (): void => setAutonomyOpen(true);
+
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("scout:focus-composer", onFocusComposer as EventListener);
+    window.addEventListener("scout:search", onSearch as EventListener);
+    window.addEventListener("scout:open-file", onOpenFile as EventListener);
+    window.addEventListener("scout:open-code", onOpenCode as EventListener);
+    window.addEventListener("scout:see-screen", onSeeScreen as EventListener);
+    window.addEventListener("scout:open-autonomy", onOpenAutonomy as EventListener);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("scout:focus-composer", onFocusComposer as EventListener);
+      window.removeEventListener("scout:search", onSearch as EventListener);
+      window.removeEventListener("scout:open-file", onOpenFile as EventListener);
+      window.removeEventListener("scout:open-code", onOpenCode as EventListener);
+      window.removeEventListener("scout:see-screen", onSeeScreen as EventListener);
+      window.removeEventListener("scout:open-autonomy", onOpenAutonomy as EventListener);
+    };
+    // openNewConversation is stable via convos.newConversation reference.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Text → image generation (spec §47). Renders the result in the conversation.
@@ -241,10 +327,7 @@ export default function Home(): JSX.Element {
               onTogglePin={convos.togglePin}
               onArchive={convos.archive}
               onRemove={removeConversation}
-              onOpenSettings={() => {
-                setSettingsOpen(true);
-                setDrawerOpen(false);
-              }}
+              onOpenSettings={() => openSettings()}
               onOpenAutonomy={() => setAutonomyOpen(true)}
               onOpenFiles={() => setViewerPath(process.env.NEXT_PUBLIC_HOME_DIR ?? "/Users/apple")}
               onOpenCode={() => { window.location.href = "/code"; }}
@@ -301,13 +384,12 @@ export default function Home(): JSX.Element {
               <span>Auto</span>
             </button>
             <button
-              className={`iconbtn ${contextOpen ? "active" : ""}`}
-              onClick={() => setContextOpen((v) => !v)}
-              title="Toggle context panel"
-              aria-pressed={contextOpen}
+              className="iconbtn"
+              onClick={() => openSettings("memory")}
+              title="Memory — what Scout remembers about you"
             >
-              <IconPanelLeft />
-              <span>Context</span>
+              <IconSparkles />
+              <span>Memory</span>
             </button>
             <button className="iconbtn" onClick={() => setDrawerOpen(true)} title="Command Center">
               <IconSliders />
@@ -346,10 +428,6 @@ export default function Home(): JSX.Element {
         />
       </main>
 
-      {contextOpen ? (
-        <ContextPanel onClose={() => setContextOpen(false)} messageCount={messages.length} />
-      ) : null}
-
       {drawerOpen ? (
         <CommandCenter
           live={live}
@@ -367,6 +445,7 @@ export default function Home(): JSX.Element {
           onClose={() => setSettingsOpen(false)}
           modelLabel={models.active?.label ?? "—"}
           backend={convos.backend}
+          initialSection={settingsSection}
         />
       ) : null}
 

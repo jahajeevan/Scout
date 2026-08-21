@@ -146,6 +146,35 @@ export default function Composer({
     return () => document.removeEventListener("mousedown", onDoc);
   }, [addOpen]);
 
+  // Focus the textarea when a home-screen tile is clicked or its shortcut
+  // fires. Optional `prefill` populates the textarea (e.g. "What's on my screen?").
+  useEffect(() => {
+    const onFocus = (e: Event): void => {
+      const detail = (e as CustomEvent<{ prefill?: string }>).detail;
+      const ta = taRef.current;
+      if (detail?.prefill) {
+        setDraft(detail.prefill);
+      }
+      // focus + cursor-to-end on the next tick so the state update has flushed
+      requestAnimationFrame(() => {
+        if (!ta) return;
+        ta.focus();
+        const len = ta.value.length;
+        ta.setSelectionRange(len, len);
+        grow();
+      });
+    };
+    const onEnableWeb = (): void => {
+      if (canSearch) setWebWanted(true);
+    };
+    window.addEventListener("scout:composer-focus", onFocus as EventListener);
+    window.addEventListener("scout:enable-web", onEnableWeb as EventListener);
+    return () => {
+      window.removeEventListener("scout:composer-focus", onFocus as EventListener);
+      window.removeEventListener("scout:enable-web", onEnableWeb as EventListener);
+    };
+  }, [canSearch]);
+
   function grow(): void {
     const ta = taRef.current;
     if (!ta) return;

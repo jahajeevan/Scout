@@ -254,6 +254,12 @@ function TodayPanel(): JSX.Element {
  * dead space to scroll past.
  */
 function WorkspaceHome({ userName }: { userName: string }): JSX.Element {
+  // Fires the same events the global keyboard shortcuts do, so tile clicks and
+  // ⌘-shortcuts route to a single set of handlers in page.tsx.
+  const fire = (name: string): void => {
+    window.dispatchEvent(new CustomEvent(`scout:${name}`));
+  };
+
   return (
     <div className="wh">
       <header className="wh-header">
@@ -267,12 +273,12 @@ function WorkspaceHome({ userName }: { userName: string }): JSX.Element {
       </header>
 
       <div className="wh-actions" role="list">
-        <QuickAction hotkey="⌘/" label="Ask anything" hint="Start a conversation" />
-        <QuickAction hotkey="⌘K" label="Search" hint="Web · docs · memory" />
-        <QuickAction hotkey="⌘⇧F" label="Open a file" hint="PDF · docx · code · media" />
-        <QuickAction hotkey="⌘⇧C" label="Code" hint="Workspace-aware engineering" />
-        <QuickAction hotkey="⌘⇧E" label="What's on screen?" hint="See + reason about the active app" />
-        <QuickAction hotkey="⌘⇧A" label="Autonomy" hint="Daemons · approvals · routines" />
+        <QuickAction hotkey="⌘/" label="Ask anything" hint="Start a conversation" tone="terracotta" onClick={() => fire("focus-composer")} />
+        <QuickAction hotkey="⌘K" label="Search" hint="Web · docs · memory" tone="sage" onClick={() => fire("search")} />
+        <QuickAction hotkey="⌘⇧F" label="Open a file" hint="PDF · docx · code · media" tone="copper" onClick={() => fire("open-file")} />
+        <QuickAction hotkey="⌘⇧C" label="Code" hint="Workspace-aware engineering" tone="copper" onClick={() => fire("open-code")} />
+        <QuickAction hotkey="⌘⇧E" label="What's on screen?" hint="See + reason about the active app" tone="amber" onClick={() => fire("see-screen")} />
+        <QuickAction hotkey="⌘⇧A" label="Autonomy" hint="Daemons · approvals · routines" tone="plum" onClick={() => fire("open-autonomy")} />
       </div>
 
       <TodayPanel />
@@ -280,14 +286,26 @@ function WorkspaceHome({ userName }: { userName: string }): JSX.Element {
   );
 }
 
-function QuickAction({ label, hint, hotkey }: { label: string; hint: string; hotkey: string }): JSX.Element {
+function QuickAction({
+  label, hint, hotkey, tone, onClick,
+}: {
+  label: string; hint: string; hotkey: string;
+  tone?: "terracotta" | "sage" | "copper" | "plum" | "amber";
+  onClick?: () => void;
+}): JSX.Element {
   return (
-    <div className="wh-action" role="listitem">
+    <button
+      className="wh-action"
+      role="listitem"
+      onClick={onClick}
+      data-tone={tone ?? "terracotta"}
+      type="button"
+    >
       <div className="wh-action-main">
         <span className="wh-action-label">{label}</span>
         <span className="wh-action-hint">{hint}</span>
       </div>
       <span className="wh-action-key">{hotkey}</span>
-    </div>
+    </button>
   );
 }

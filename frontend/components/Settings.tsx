@@ -63,12 +63,21 @@ export default function Settings({
   onClose,
   modelLabel,
   backend,
+  initialSection,
 }: {
   onClose: () => void;
   modelLabel: string;
   backend: "supabase" | "local";
+  initialSection?: Section;
 }): JSX.Element {
-  const [section, setSection] = useState<Section>("voice");
+  const [section, setSection] = useState<Section>(initialSection ?? "voice");
+
+  // Add-memory form state (Settings → Memory)
+  const [newMemCategory, setNewMemCategory] = useState<string>("preferences");
+  const [newMemKey, setNewMemKey] = useState<string>("");
+  const [newMemValue, setNewMemValue] = useState<string>("");
+  const [newMemSaving, setNewMemSaving] = useState<boolean>(false);
+  const [newMemError, setNewMemError] = useState<string>("");
   const [voices, setVoices] = useState<Voice[]>([]);
   const [defaultVoice, setDefaultVoice] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -210,6 +219,35 @@ export default function Settings({
     if (!window.confirm(`Forget "${m.key.replace(/_/g, " ")}"?`)) return;
     setMemories((prev) => prev.filter((x) => x.id !== m.id));
     fetch(`${base}/memory/${m.id}`, { method: "DELETE" }).catch(() => {});
+  };
+
+  const saveNewMemory = async (): Promise<void> => {
+    const base = backendBase();
+    const key = newMemKey.trim();
+    const value = newMemValue.trim();
+    if (!base) { setNewMemError("Backend not reachable."); return; }
+    if (!key || !value) { setNewMemError("Both key and value are needed."); return; }
+    setNewMemSaving(true);
+    setNewMemError("");
+    try {
+      const r = await fetch(`${base}/memory`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ category: newMemCategory, key: key.toLowerCase().replace(/\s+/g, "_"), value }),
+      });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      setNewMemKey("");
+      setNewMemValue("");
+      // reload memories list
+      fetch(`${base}/memory`)
+        .then((rr) => rr.json())
+        .then((d: { memories?: Memory[] }) => setMemories(d.memories ?? []))
+        .catch(() => {});
+    } catch (exc) {
+      setNewMemError(`Couldn't save: ${(exc as Error).message}`);
+    } finally {
+      setNewMemSaving(false);
+    }
   };
 
   useEffect(() => {
@@ -525,14 +563,56 @@ export default function Settings({
             <div>
               <h2 className="settings-title">Memory</h2>
               <p className="settings-sub">
-                What {brand.name} remembers about you. Ask {brand.name} to remember or change things in chat,
-                or manage them here. Deleting a memory doesn&apos;t delete your conversations.
+                What {brand.name} remembers about you. Add things here yourself, or just tell {brand.name} in chat.
+                Deleting a memory doesn&apos;t delete your conversations.
               </p>
+
+              {/* Add-memory form — quick self-service so you don't need chat to seed context. */}
+              <div className="mem-add">
+                <div className="mem-add-row">
+                  <select
+                    className="mem-add-input mem-add-cat"
+                    value={newMemCategory}
+                    onChange={(e) => setNewMemCategory(e.target.value)}
+                  >
+                    <option value="preferences">preferences</option>
+                    <option value="personal">personal</option>
+                    <option value="work">work</option>
+                    <option value="projects">projects</option>
+                    <option value="people">people</option>
+                    <option value="other">other</option>
+                  </select>
+                  <input
+                    className="mem-add-input"
+                    placeholder="What is this? (e.g. preferred editor)"
+                    value={newMemKey}
+                    onChange={(e) => setNewMemKey(e.target.value)}
+                  />
+                </div>
+                <div className="mem-add-row">
+                  <input
+                    className="mem-add-input"
+                    placeholder="The value to remember (e.g. VS Code)"
+                    value={newMemValue}
+                    onChange={(e) => setNewMemValue(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter" && !newMemSaving) saveNewMemory(); }}
+                  />
+                  <button
+                    className="mem-add-btn"
+                    onClick={saveNewMemory}
+                    disabled={newMemSaving || !newMemKey.trim() || !newMemValue.trim()}
+                  >
+                    {newMemSaving ? "Saving…" : "＋ Add"}
+                  </button>
+                </div>
+                {newMemError && <div className="mem-add-error">{newMemError}</div>}
+              </div>
+
               {memLoading ? (
                 <p className="settings-note">Loading…</p>
               ) : memories.length === 0 ? (
                 <p className="settings-note">
-                  Nothing yet. Try saying “Remember that my preferred editor is Cursor.”
+                  Nothing yet. Add one above, or just tell {brand.name} in chat — “remember that my preferred editor is VS Code.”
                 </p>
               ) : (
                 <div className="mem-list">

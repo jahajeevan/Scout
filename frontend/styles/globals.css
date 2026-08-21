@@ -17,37 +17,53 @@
   color-scheme: light;
 
   /* ── Surfaces (layered depth via lightness, not opacity) ── */
-  --bg:          #F2EFE8;              /* app canvas — warm paper, not beige */
-  --surface:     #FBF9F4;              /* raised cards, panels, popovers */
+  --bg:          #F2EAD9;              /* app canvas — warm ivory */
+  --surface:     #FAF5E9;              /* raised cards, panels, popovers */
   --surface-2:   #FFFFFF;              /* buttons, chips, hover states */
-  --surface-3:   #E8E4DA;              /* sunken — inputs, wells, code */
-  --overlay:     rgba(28, 26, 23, 0.32);
+  --surface-3:   #EDE2CD;              /* sunken — inputs, wells, code */
+  --overlay:     rgba(43, 32, 24, 0.32);
 
   /* ── Borders ── */
-  --border:        rgba(28, 26, 23, 0.08);
-  --border-strong: rgba(28, 26, 23, 0.14);
+  --border:        rgba(180, 148, 108, 0.22);
+  --border-strong: rgba(180, 148, 108, 0.36);
   --border-focus:  var(--accent);
 
   /* ── Ink ── */
-  --ink:          #1B1A17;             /* primary — warm graphite */
-  --ink-soft:     #59564F;             /* secondary */
-  --ink-quiet:    #8F8B82;             /* tertiary / meta */
-  --ink-disabled: rgba(28, 26, 23, 0.30);
+  --ink:          #2B2018;             /* primary — warm dark ink */
+  --ink-soft:     #6B5B4A;             /* secondary */
+  --ink-quiet:    #96866F;             /* tertiary / meta */
+  --ink-disabled: rgba(43, 32, 24, 0.30);
 
-  /* ── Accent — muted brass, used ONLY on interactive/active/focus ── */
-  --accent:         #9C7A34;
-  --accent-hover:   #7F631F;
-  --accent-fg:      #FDFBF5;
-  --accent-subtle:  rgba(156, 122, 52, 0.10);
-  --accent-line:    rgba(156, 122, 52, 0.28);
+  /* ── Primary accent — terracotta (was muted brass) ── */
+  --accent:         #C67550;
+  --accent-hover:   #A85E3C;
+  --accent-fg:      #FBF6EC;
+  --accent-subtle:  rgba(198, 117, 80, 0.12);
+  --accent-line:    rgba(198, 117, 80, 0.32);
+
+  /* ── Rich color language — every color has a semantic role ── */
+  --terracotta:      #C67550;           /* primary · CTAs · web/research */
+  --terracotta-soft: rgba(198, 117, 80, 0.12);
+  --sage:            #6F8A5A;           /* docs · success · search */
+  --sage-soft:       rgba(111, 138, 90, 0.12);
+  --copper:          #B47542;           /* code · files · workspace */
+  --copper-soft:     rgba(180, 117, 66, 0.12);
+  --plum:            #7A4E6D;           /* autonomy · routines · memory */
+  --plum-soft:       rgba(122, 78, 109, 0.12);
+  --amber:           #D29A3A;           /* notifications · vision · Forge */
+  --amber-soft:      rgba(210, 154, 58, 0.14);
+
+  /* User message bubble — deep slate for contrast on warm ivory */
+  --user-bubble:     #2B2F38;
+  --user-ink:        #F5F1E8;
 
   /* ── Semantic (rare, purposeful) ── */
-  --success:         #4E7B5D;
-  --success-subtle:  rgba(78, 123, 93, 0.10);
-  --warning:         #A6741A;
-  --warning-subtle:  rgba(166, 116, 26, 0.10);
-  --danger:          #9E4634;
-  --danger-subtle:   rgba(158, 70, 52, 0.10);
+  --success:         var(--sage);
+  --success-subtle:  var(--sage-soft);
+  --warning:         var(--amber);
+  --warning-subtle:  var(--amber-soft);
+  --danger:          #C9636A;
+  --danger-subtle:   rgba(201, 99, 106, 0.12);
 
   /* ── Elevation — real shadows, no glow ── */
   --el-1: 0 1px 2px rgba(20, 16, 8, 0.05), 0 1px 1px rgba(20, 16, 8, 0.03);
@@ -104,16 +120,16 @@
   --red:           var(--danger);
   --ink-faint:     var(--ink-quiet);
 
-  --c-code:        var(--ink-soft);
-  --c-code-soft:   rgba(89, 86, 79, 0.10);
-  --c-docs:        var(--success);
-  --c-docs-soft:   var(--success-subtle);
-  --c-web:         var(--ink-soft);
-  --c-web-soft:    rgba(89, 86, 79, 0.10);
-  --c-mem:         var(--warning);
-  --c-mem-soft:    var(--warning-subtle);
-  --c-vision:      var(--success);
-  --c-vision-soft: var(--success-subtle);
+  --c-code:        var(--copper);
+  --c-code-soft:   var(--copper-soft);
+  --c-docs:        var(--sage);
+  --c-docs-soft:   var(--sage-soft);
+  --c-web:         var(--terracotta);
+  --c-web-soft:    var(--terracotta-soft);
+  --c-mem:         var(--plum);
+  --c-mem-soft:    var(--plum-soft);
+  --c-vision:      var(--amber);
+  --c-vision-soft: var(--amber-soft);
 
   --ease-swift:  var(--ease-out);
   --ease-settle: var(--ease-out);
@@ -131,32 +147,50 @@
 :root[data-theme="dark"] {
   color-scheme: dark;
 
-  --bg:          #0F1012;              /* graphite */
-  --surface:     #17181B;              /* raised */
-  --surface-2:   #1E1F23;              /* buttons/hover */
-  --surface-3:   #0A0B0D;              /* sunken */
-  --overlay:     rgba(0, 0, 0, 0.55);
+  /* ── Warm Dark — deep chocolate, not black ── */
+  --bg:          #1A1512;              /* deep chocolate */
+  --surface:     #221B17;              /* raised — warm graphite */
+  --surface-2:   #2B221C;              /* buttons/hover */
+  --surface-3:   #16110E;              /* sunken */
+  --overlay:     rgba(0, 0, 0, 0.60);
 
-  --border:        rgba(255, 255, 255, 0.06);
-  --border-strong: rgba(255, 255, 255, 0.12);
+  --border:        rgba(214, 136, 99, 0.14);
+  --border-strong: rgba(214, 136, 99, 0.24);
 
-  --ink:          #EDEAE3;             /* warm off-white */
-  --ink-soft:     #A29E93;
-  --ink-quiet:    #6A6660;
-  --ink-disabled: rgba(237, 234, 227, 0.30);
+  --ink:          #F5ECDC;             /* warm off-white */
+  --ink-soft:     #A89680;
+  --ink-quiet:    #7A6A57;
+  --ink-disabled: rgba(245, 236, 220, 0.30);
 
-  --accent:         #C9A162;           /* champagne — slightly warmer in dark */
-  --accent-hover:   #E0BC81;
-  --accent-fg:      #0F1012;
-  --accent-subtle:  rgba(201, 161, 98, 0.14);
-  --accent-line:    rgba(201, 161, 98, 0.32);
+  /* Primary accent in dark — brightened terracotta */
+  --accent:         #D68863;
+  --accent-hover:   #E69976;
+  --accent-fg:      #1A1512;
+  --accent-subtle:  rgba(214, 136, 99, 0.18);
+  --accent-line:    rgba(214, 136, 99, 0.36);
 
-  --success:         #8FAB8E;
-  --success-subtle:  rgba(143, 171, 142, 0.14);
-  --warning:         #D4A85B;
-  --warning-subtle:  rgba(212, 168, 91, 0.14);
-  --danger:          #C97260;
-  --danger-subtle:   rgba(201, 114, 96, 0.14);
+  /* Rich color language — brightened for dark surfaces */
+  --terracotta:      #D68863;
+  --terracotta-soft: rgba(214, 136, 99, 0.16);
+  --sage:            #8CAA72;
+  --sage-soft:       rgba(140, 170, 114, 0.16);
+  --copper:          #D1935A;
+  --copper-soft:     rgba(209, 147, 90, 0.16);
+  --plum:            #A1738C;
+  --plum-soft:       rgba(161, 115, 140, 0.16);
+  --amber:           #E6B464;
+  --amber-soft:      rgba(230, 180, 100, 0.16);
+
+  /* User message bubble — terracotta on dark, cream text */
+  --user-bubble:     #D68863;
+  --user-ink:        #1A1512;
+
+  --success:         var(--sage);
+  --success-subtle:  var(--sage-soft);
+  --warning:         var(--amber);
+  --warning-subtle:  var(--amber-soft);
+  --danger:          #E28088;
+  --danger-subtle:   rgba(226, 128, 136, 0.14);
 
   --el-1: 0 1px 2px rgba(0, 0, 0, 0.40);
   --el-2: 0 2px 6px rgba(0, 0, 0, 0.45), 0 8px 20px rgba(0, 0, 0, 0.35);
@@ -413,17 +447,19 @@ button, input, textarea { font-family: inherit; color: inherit; }
   letter-spacing: 0.003em;
 }
 
-/* User — a compact pill, right-aligned. */
+/* User — high-contrast pill, right-aligned. Distinct from surface so
+   the reader always knows immediately which turn is theirs. */
 .msg.user { align-items: flex-end; }
 .msg.user .msg-body {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  padding: 8px 14px;
+  background: var(--user-bubble);
+  border: 1px solid transparent;
+  padding: 10px 16px;
   border-radius: var(--r-4) var(--r-4) var(--r-1) var(--r-4);
   max-width: 78%;
-  font-size: 14px;
+  font-size: 14.5px;
   line-height: 1.5;
-  color: var(--ink);
+  color: var(--user-ink);
+  box-shadow: var(--el-2);
 }
 
 /* Scout — flowing prose. A single 2px accent bar on the left is the ONLY
@@ -1500,7 +1536,7 @@ textarea {
 .md {
   color: var(--ink);
   font-size: 15.5px;
-  line-height: 1.66;
+  line-height: 1.55;
 }
 .md > *:first-child {
   margin-top: 0;
@@ -1509,7 +1545,48 @@ textarea {
   margin-bottom: 0;
 }
 .md p {
-  margin: 0 0 12px;
+  margin: 0 0 6px;
+}
+.md p + p {
+  margin-top: 0;
+}
+.md br + br {
+  display: none;
+}
+
+/* ----------------------------------------------------------------------------
+   Settings → Memory — add-memory form
+---------------------------------------------------------------------------- */
+.mem-add {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 14px; margin: 12px 0 20px;
+  background: var(--surface, var(--bg-elev, rgba(0,0,0,0.02)));
+  border: 1px solid var(--hairline, rgba(0,0,0,0.08));
+  border-radius: 12px;
+}
+.mem-add-row { display: flex; gap: 8px; }
+.mem-add-input {
+  flex: 1; min-width: 0;
+  padding: 9px 12px; border-radius: 8px;
+  border: 1px solid var(--hairline, rgba(0,0,0,0.12));
+  background: var(--bg, transparent); color: var(--ink);
+  font: inherit; font-size: 13.5px; outline: none;
+  transition: border-color 0.15s ease;
+}
+.mem-add-input:focus { border-color: var(--brass, #b6764f); }
+.mem-add-input::placeholder { color: var(--ink-soft, rgba(0,0,0,0.4)); }
+.mem-add-cat { flex: 0 0 160px; cursor: pointer; }
+.mem-add-btn {
+  padding: 9px 16px; border-radius: 8px;
+  background: var(--brass, #b6764f); color: white;
+  border: none; font: inherit; font-weight: 600; font-size: 13px;
+  cursor: pointer; transition: background 0.15s ease;
+  flex-shrink: 0;
+}
+.mem-add-btn:hover:not(:disabled) { background: var(--brass-bright, #d89a72); }
+.mem-add-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.mem-add-error {
+  color: var(--red, #c9636a); font-size: 12.5px; padding: 4px 2px;
 }
 .md h1,
 .md h2,
@@ -3630,18 +3707,40 @@ textarea {
   overflow: hidden;
   box-shadow: var(--el-1);
 }
+/* Buttons reset (QuickAction became a real <button>) */
 .wh-action {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 12px 14px;
+  padding: 14px 16px;
   background: var(--surface);
   cursor: pointer;
-  transition: background var(--dur-instant) var(--ease-out);
+  border: none;
+  border-left: 3px solid transparent;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  transition: background var(--dur-instant) var(--ease-out),
+              border-left-color var(--dur-instant) var(--ease-out),
+              transform var(--dur-instant) var(--ease-out);
+  position: relative;
 }
-.wh-action:hover { background: var(--surface-2); }
-.wh-action:hover .wh-action-key { color: var(--accent); border-color: var(--accent-line); }
+.wh-action:hover {
+  background: var(--surface-2);
+  border-left-color: var(--tile-tone, var(--accent));
+}
+.wh-action:hover .wh-action-key {
+  color: var(--tile-tone, var(--accent));
+  border-color: var(--tile-tone, var(--accent-line));
+}
+.wh-action:hover .wh-action-label { color: var(--tile-tone, var(--ink)); }
+.wh-action:active { transform: translateY(0.5px); }
+.wh-action[data-tone="terracotta"] { --tile-tone: var(--terracotta); }
+.wh-action[data-tone="sage"]       { --tile-tone: var(--sage); }
+.wh-action[data-tone="copper"]     { --tile-tone: var(--copper); }
+.wh-action[data-tone="plum"]       { --tile-tone: var(--plum); }
+.wh-action[data-tone="amber"]      { --tile-tone: var(--amber); }
 .wh-action-main { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .wh-action-label {
   font-size: 13px;

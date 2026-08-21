@@ -1,9 +1,10 @@
 "use client";
 
 // ═══════════════════════════════════════════════════════════════════════════
-// GifPicker — search + grid, powered by Tenor v2 via backend /gif/search.
+// GifPicker — search + grid, powered by Giphy via backend /gif/search.
+// (Tenor stopped accepting new API clients in Jan 2026.)
 // Debounced search input; masonry-ish grid; click a GIF → onPick(url).
-// Falls back to a friendly setup message when TENOR_API_KEY isn't set.
+// Falls back to a friendly setup message when GIPHY_API_KEY isn't set.
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { useEffect, useRef, useState } from "react";
@@ -48,7 +49,7 @@ export default function GifPicker({
       .then((d: { gifs?: GifItem[]; configured?: boolean; error?: string }) => {
         if (d.configured === false) {
           setConfigured(false);
-          setError(d.error || "GIFs need a TENOR_API_KEY in .env — see docs.");
+          setError(d.error || "GIFs need a GIPHY_API_KEY in .env — see docs.");
           setGifs([]);
           return;
         }
@@ -73,7 +74,7 @@ export default function GifPicker({
     <div className="gif-pop" onClick={(e) => e.stopPropagation()}>
       <input
         className="gif-search"
-        placeholder="Search Tenor GIFs…"
+        placeholder="Search Giphy…"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         autoFocus
@@ -82,9 +83,10 @@ export default function GifPicker({
         <div className="gif-setup">
           <div className="gif-setup-title">GIFs need one setup step</div>
           <p className="gif-setup-body">
-            Add <code>TENOR_API_KEY=…</code> to your <code>.env</code>. Get a free
-            key at <a href="https://developers.google.com/tenor/guides/quickstart" target="_blank" rel="noopener noreferrer">
-            Tenor / Google Cloud</a>. Restart the backend and you&apos;re set.
+            Add <code>GIPHY_API_KEY=…</code> to your <code>.env</code>. Get a free
+            key at <a href="https://developers.giphy.com" target="_blank" rel="noopener noreferrer">
+            developers.giphy.com</a> → Create App → API Key. Restart the backend
+            and you&apos;re set.
           </p>
         </div>
       )}

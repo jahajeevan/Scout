@@ -540,7 +540,7 @@ export default function Composer({
             ) : null}
           </div>
 
-          {/* GIF picker — Tenor */}
+          {/* GIF picker — Giphy */}
           <div ref={gifRef} style={{ position: "relative" }}>
             <button
               className={`webtoggle giftoggle ${gifOpen ? "on" : ""}`}

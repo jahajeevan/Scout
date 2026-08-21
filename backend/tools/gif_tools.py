@@ -1,8 +1,8 @@
 """GIF tools — let Scout reply with a contextual GIF when the vibe fits.
 
-send_gif(query, reason) searches Tenor and returns a GIF URL that the chat UI
+send_gif(query, reason) searches Giphy and returns a GIF URL that the chat UI
 renders inline (as an image). Marked SAFE — it only fetches; nothing writes
-state. If TENOR_API_KEY isn't set, the tool returns an honest "GIFs need
+state. If GIPHY_API_KEY isn't set, the tool returns an honest "GIFs need
 setup" message instead of failing.
 
 Scout is instructed (in SYSTEM_PROMPT) to use this when the moment is playful
@@ -21,7 +21,7 @@ async def _send_gif(query: str, reason: str = "") -> ToolResult:
         return ToolResult(
             ok=False,
             summary=(
-                "GIFs aren't set up yet — add TENOR_API_KEY to .env "
+                "GIFs aren't set up yet — add GIPHY_API_KEY to .env "
                 "(free Google Cloud key) to enable this."
             ),
             error="not_configured",
@@ -32,7 +32,7 @@ async def _send_gif(query: str, reason: str = "") -> ToolResult:
     try:
         gifs = await _gif.search(q, limit=8)
     except Exception as exc:
-        return ToolResult(ok=False, summary=f"Tenor search failed: {str(exc)[:120]}", error="tenor")
+        return ToolResult(ok=False, summary=f"Giphy search failed: {str(exc)[:120]}", error="tenor")
     if not gifs:
         return ToolResult(ok=True, summary=f"(No GIFs matched '{q}'.)")
     pick = gifs[0]
@@ -53,7 +53,7 @@ def register(registry) -> None:
         Tool(
             name="send_gif",
             description=(
-                "Reply with an animated GIF from Tenor that matches the moment. "
+                "Reply with an animated GIF from Giphy that matches the moment. "
                 "Use for casual reactions — celebrating a win, gentle teasing, "
                 "empathy, quick 'lol' / 'oh no' / 'nice' vibes. DO NOT use in "
                 "serious, technical, sensitive, or error-related replies. Pass "
@@ -64,7 +64,7 @@ def register(registry) -> None:
             parameters={
                 "type": "object",
                 "properties": {
-                    "query": {"type": "string", "description": "Tenor search phrase (2-5 words). Examples: 'celebrate', 'oh no', 'thinking hard', 'high five', 'nice'."},
+                    "query": {"type": "string", "description": "Giphy search phrase (2-5 words). Examples: 'celebrate', 'oh no', 'thinking hard', 'high five', 'nice'."},
                     "reason": {"type": "string", "description": "One line — why this GIF fits the moment."},
                 },
                 "required": ["query"],

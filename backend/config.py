@@ -95,7 +95,12 @@ GROQ_BASE_URL: str = CONFIG.get("groq_base_url", "https://api.groq.com/openai/v1
 # Falls back to gpt-oss-20b when GROQ_API_KEY isn't set; falls back further to
 # nemotron-3-ultra when NVIDIA is the only endpoint available. The runtime
 # provider registry does the fallback (backend/providers/registry.py).
-DEFAULT_MODEL: str = CONFIG.get("default_model", "gpt-oss-20b-groq")
+DEFAULT_MODEL: str = CONFIG.get("default_model", "qwen3-groq")
+
+# Dedicated brain for Code mode — chosen for reasoning depth on file
+# operations rather than raw chat speed. Falls back to whatever chat is
+# using if the model isn't available (registry.provider_for handles it).
+CODE_MODEL: str = CONFIG.get("code_model", "gpt-oss-120b-groq")
 
 # Anthropic (optional).
 CLAUDE_MODEL: str = CONFIG.get("claude_model", "claude-haiku-4-5")

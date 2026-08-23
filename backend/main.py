@@ -112,7 +112,7 @@ async def _start_scheduler() -> None:
 # The model voice turns use — prefer Groq's blazing 8B (instant TTS handoff),
 # fall back to gpt-oss-20b if GROQ_API_KEY isn't set. Talk should feel snappy
 # regardless of which model the user picked for chat.
-VOICE_MODEL = "gpt-oss-20b-groq"
+VOICE_MODEL = "qwen3-groq"
 VOICE_MODEL_FALLBACK = "gpt-oss-20b"
 
 
@@ -1448,9 +1448,24 @@ async def code_run(req: CodeRequest) -> dict[str, object]:
             role = "assistant"
         if role in ("user", "assistant"):
             history.append({"role": role, "content": content})
+    # Code mode uses its own dedicated brain (deeper reasoning) unless the
+    # user has explicitly picked a different model in the Code topbar.
+    from backend.config import CODE_MODEL
+    from backend.providers import registry as pregistry
+    from backend.providers.catalog import get_spec as _spec
+
+    code_model = req.model
+    if not code_model:
+        # Only route to CODE_MODEL if its endpoint has a key configured — else
+        # let the orchestrator fall through to the active chat model.
+        spec = _spec(CODE_MODEL)
+        ep = pregistry._ENDPOINTS.get(spec.endpoint) if spec else None
+        if ep and ep.available:
+            code_model = CODE_MODEL
+
     try:
         # code + documents tools: the agent can also read anything the user uploaded.
-        result = await orchestrator.run(objective, model=req.model, agent_names=["code", "documents", "productivity"], auto_confirm=auto, history=history)
+        result = await orchestrator.run(objective, model=code_model, agent_names=["code", "documents", "productivity"], auto_confirm=auto, history=history)
     except Exception as exc:
         return {"reply": f"Scout couldn't complete that in the workspace. ({str(exc)[:140]})", "activity": [],
                 "state": "failed", "pending_confirmation": None, "model": req.model or llm.active_model()}

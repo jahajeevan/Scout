@@ -50,26 +50,9 @@ class ModelSpec:
 # listed — dead/timeout/500 models were removed so the user never hits a "token
 # error" or an endless wait (re-add if the tier improves).
 CATALOG: list[ModelSpec] = [
-    # ─── Groq — OpenAI's open GPT-OSS on custom silicon, 500-1000 tok/s ────
-    ModelSpec(
-        id="gpt-oss-20b-groq",
-        label="GPT-OSS 20B ⚡",
-        endpoint="groq",
-        remote_id="openai/gpt-oss-20b",
-        capabilities=frozenset({"text", "tools"}),
-        context=131_072,
-        note="Fastest — GPT-OSS 20B on Groq (~800 tok/s). Chat + tools default.",
-        default=True,
-    ),
-    ModelSpec(
-        id="gpt-oss-120b-groq",
-        label="GPT-OSS 120B ⚡",
-        endpoint="groq",
-        remote_id="openai/gpt-oss-120b",
-        capabilities=frozenset({"text", "tools"}),
-        context=131_072,
-        note="Smarter + still fast on Groq (~400 tok/s). Best when you need deep reasoning.",
-    ),
+    # ─── Groq — separate model per surface, all on custom LPU silicon ──────
+    # Chat: Qwen 3.6 27B — different quota bucket from the NVIDIA-served
+    # gpt-oss-20b the user already has, so no rate-limit collision.
     ModelSpec(
         id="qwen3-groq",
         label="Qwen 3.6 27B ⚡",
@@ -77,7 +60,28 @@ CATALOG: list[ModelSpec] = [
         remote_id="qwen/qwen3.6-27b",
         capabilities=frozenset({"text", "tools"}),
         context=131_072,
-        note="Alibaba's Qwen on Groq — strong reasoning, fast.",
+        note="Fastest chat brain — Qwen on Groq (~600 tok/s). Chat + tools default.",
+        default=True,
+    ),
+    # Code: GPT-OSS 120B — deep reasoning for planning + editing files.
+    ModelSpec(
+        id="gpt-oss-120b-groq",
+        label="GPT-OSS 120B ⚡",
+        endpoint="groq",
+        remote_id="openai/gpt-oss-120b",
+        capabilities=frozenset({"text", "tools"}),
+        context=131_072,
+        note="Deep-reasoning brain on Groq — Code mode default (~400 tok/s).",
+    ),
+    # Groq's proprietary compound model — Groq-optimised, small + fast.
+    ModelSpec(
+        id="groq-compound-mini",
+        label="Groq Compound Mini ⚡",
+        endpoint="groq",
+        remote_id="groq/compound-mini",
+        capabilities=frozenset({"text", "tools"}),
+        context=131_072,
+        note="Groq's in-house compact model — extremely snappy.",
     ),
     # ─── NVIDIA NIM — free tier, more variety but slower ────────────────────
     ModelSpec(

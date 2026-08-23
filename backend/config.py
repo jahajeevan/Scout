@@ -95,7 +95,7 @@ GROQ_BASE_URL: str = CONFIG.get("groq_base_url", "https://api.groq.com/openai/v1
 # Falls back to gpt-oss-20b when GROQ_API_KEY isn't set; falls back further to
 # nemotron-3-ultra when NVIDIA is the only endpoint available. The runtime
 # provider registry does the fallback (backend/providers/registry.py).
-DEFAULT_MODEL: str = CONFIG.get("default_model", "llama-3.1-8b-instant")
+DEFAULT_MODEL: str = CONFIG.get("default_model", "gpt-oss-20b-groq")
 
 # Anthropic (optional).
 CLAUDE_MODEL: str = CONFIG.get("claude_model", "claude-haiku-4-5")

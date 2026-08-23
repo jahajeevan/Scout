@@ -112,7 +112,7 @@ async def _start_scheduler() -> None:
 # The model voice turns use — prefer Groq's blazing 8B (instant TTS handoff),
 # fall back to gpt-oss-20b if GROQ_API_KEY isn't set. Talk should feel snappy
 # regardless of which model the user picked for chat.
-VOICE_MODEL = "llama-3.1-8b-instant"
+VOICE_MODEL = "gpt-oss-20b-groq"
 VOICE_MODEL_FALLBACK = "gpt-oss-20b"
 
 

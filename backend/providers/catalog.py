@@ -50,25 +50,34 @@ class ModelSpec:
 # listed — dead/timeout/500 models were removed so the user never hits a "token
 # error" or an endless wait (re-add if the tier improves).
 CATALOG: list[ModelSpec] = [
-    # ─── Groq — Llama on custom silicon, 500-1000 tok/s. Feels instant. ─────
+    # ─── Groq — OpenAI's open GPT-OSS on custom silicon, 500-1000 tok/s ────
     ModelSpec(
-        id="llama-3.1-8b-instant",
-        label="Llama-3.1 8B ⚡",
+        id="gpt-oss-20b-groq",
+        label="GPT-OSS 20B ⚡",
         endpoint="groq",
-        remote_id="llama-3.1-8b-instant",
+        remote_id="openai/gpt-oss-20b",
         capabilities=frozenset({"text", "tools"}),
         context=131_072,
-        note="Fastest — ~1000 tok/s on Groq. Best for chat + tools.",
+        note="Fastest — GPT-OSS 20B on Groq (~800 tok/s). Chat + tools default.",
         default=True,
     ),
     ModelSpec(
-        id="llama-3.3-70b-versatile",
-        label="Llama-3.3 70B ⚡",
+        id="gpt-oss-120b-groq",
+        label="GPT-OSS 120B ⚡",
         endpoint="groq",
-        remote_id="llama-3.3-70b-versatile",
+        remote_id="openai/gpt-oss-120b",
         capabilities=frozenset({"text", "tools"}),
         context=131_072,
-        note="Big + fast on Groq (~250 tok/s). Smarter answers, still snappy.",
+        note="Smarter + still fast on Groq (~400 tok/s). Best when you need deep reasoning.",
+    ),
+    ModelSpec(
+        id="qwen3-groq",
+        label="Qwen 3.6 27B ⚡",
+        endpoint="groq",
+        remote_id="qwen/qwen3.6-27b",
+        capabilities=frozenset({"text", "tools"}),
+        context=131_072,
+        note="Alibaba's Qwen on Groq — strong reasoning, fast.",
     ),
     # ─── NVIDIA NIM — free tier, more variety but slower ────────────────────
     ModelSpec(

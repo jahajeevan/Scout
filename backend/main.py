@@ -109,9 +109,11 @@ async def _start_scheduler() -> None:
 
     asyncio.create_task(_loop())
 
-# The model voice turns use — the fastest verified model, so Talk feels instant
-# regardless of which model is selected for chat.
-VOICE_MODEL = "gpt-oss-20b"
+# The model voice turns use — prefer Groq's blazing 8B (instant TTS handoff),
+# fall back to gpt-oss-20b if GROQ_API_KEY isn't set. Talk should feel snappy
+# regardless of which model the user picked for chat.
+VOICE_MODEL = "llama-3.1-8b-instant"
+VOICE_MODEL_FALLBACK = "gpt-oss-20b"
 
 
 async def _augment_with_memory(message: str) -> str:
@@ -593,9 +595,12 @@ async def voice(file: UploadFile = File(...)) -> dict[str, object]:
     if reply is None:
         prompt = await _augment_with_memory(transcript)
         # Voice must feel instant: use the fastest model and ask for a short spoken
-        # reply (less text → much faster speech synthesis).
+        # reply (less text → much faster speech synthesis). Groq first, gpt-oss fallback.
         voice_prompt = "[Voice reply: answer in 1–2 short spoken sentences, no markdown or lists.]\n\n" + prompt
-        reply = await llm.chat(voice_prompt, history=_memory.history(), model=VOICE_MODEL)
+        try:
+            reply = await llm.chat(voice_prompt, history=_memory.history(), model=VOICE_MODEL)
+        except Exception:
+            reply = await llm.chat(voice_prompt, history=_memory.history(), model=VOICE_MODEL_FALLBACK)
     _memory.add_user(transcript)
     _memory.add_assistant(reply)
 

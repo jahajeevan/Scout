@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 class ModelSpec:
     id: str                    # stable internal id used by the UI + API
     label: str                 # human-facing name
-    endpoint: str              # which provider endpoint serves it: "zai" | "nvidia"
+    endpoint: str              # which provider endpoint serves it: "zai" | "nvidia" | "groq"
     remote_id: str             # the model id that endpoint expects
     capabilities: frozenset[str]
     context: int               # approx context window (tokens)
@@ -50,6 +50,27 @@ class ModelSpec:
 # listed — dead/timeout/500 models were removed so the user never hits a "token
 # error" or an endless wait (re-add if the tier improves).
 CATALOG: list[ModelSpec] = [
+    # ─── Groq — Llama on custom silicon, 500-1000 tok/s. Feels instant. ─────
+    ModelSpec(
+        id="llama-3.1-8b-instant",
+        label="Llama-3.1 8B ⚡",
+        endpoint="groq",
+        remote_id="llama-3.1-8b-instant",
+        capabilities=frozenset({"text", "tools"}),
+        context=131_072,
+        note="Fastest — ~1000 tok/s on Groq. Best for chat + tools.",
+        default=True,
+    ),
+    ModelSpec(
+        id="llama-3.3-70b-versatile",
+        label="Llama-3.3 70B ⚡",
+        endpoint="groq",
+        remote_id="llama-3.3-70b-versatile",
+        capabilities=frozenset({"text", "tools"}),
+        context=131_072,
+        note="Big + fast on Groq (~250 tok/s). Smarter answers, still snappy.",
+    ),
+    # ─── NVIDIA NIM — free tier, more variety but slower ────────────────────
     ModelSpec(
         id="nemotron-3-ultra",
         label="Nemotron-3 Ultra 550B",
@@ -57,8 +78,7 @@ CATALOG: list[ModelSpec] = [
         remote_id="nvidia/nemotron-3-ultra-550b-a55b",
         capabilities=frozenset({"text", "tools"}),
         context=128_000,
-        note="Flagship — highest quality, fast (~1s). Scout default.",
-        default=True,
+        note="Flagship on NVIDIA free tier — deep, ~1s first token.",
     ),
     ModelSpec(
         id="gpt-oss-20b",
@@ -67,7 +87,7 @@ CATALOG: list[ModelSpec] = [
         remote_id="openai/gpt-oss-20b",
         capabilities=frozenset({"text", "tools"}),
         context=128_000,
-        note="OpenAI's open model — the fastest here (~0.7s). Great all-rounder.",
+        note="OpenAI's open model on NVIDIA — quick (~0.7s), reliable fallback.",
     ),
     ModelSpec(
         id="nemotron-3-nano-omni",

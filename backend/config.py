@@ -85,9 +85,17 @@ NVIDIA_BASE_URL: str = CONFIG.get("nvidia_base_url", "https://integrate.api.nvid
 ZAI_API_KEY: str | None = os.environ.get("ZAI_API_KEY")
 ZAI_BASE_URL: str = CONFIG.get("zai_base_url", "https://api.z.ai/api/paas/v4")
 
+# Groq — insanely fast Llama inference (300-1000+ tok/s, ~10x NVIDIA free tier).
+# Get a free key at https://console.groq.com/keys. OpenAI-compatible endpoint.
+GROQ_API_KEY: str | None = os.environ.get("GROQ_API_KEY")
+GROQ_BASE_URL: str = CONFIG.get("groq_base_url", "https://api.groq.com/openai/v1")
+
 # The model the chat starts on (a stable catalog id — see providers/catalog.py).
-# Default is Nemotron-3 Ultra (flagship, reliable) while GLM-5.2 awaits balance.
-DEFAULT_MODEL: str = CONFIG.get("default_model", "nemotron-3-ultra")
+# Default is Llama-3.1 8B Instant on Groq — fastest option for the demo feel.
+# Falls back to gpt-oss-20b when GROQ_API_KEY isn't set; falls back further to
+# nemotron-3-ultra when NVIDIA is the only endpoint available. The runtime
+# provider registry does the fallback (backend/providers/registry.py).
+DEFAULT_MODEL: str = CONFIG.get("default_model", "llama-3.1-8b-instant")
 
 # Anthropic (optional).
 CLAUDE_MODEL: str = CONFIG.get("claude_model", "claude-haiku-4-5")

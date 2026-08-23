@@ -13,6 +13,8 @@ from __future__ import annotations
 
 from backend.config import (
     DEFAULT_MODEL,
+    GROQ_API_KEY,
+    GROQ_BASE_URL,
     NVIDIA_API_KEY,
     NVIDIA_BASE_URL,
     ZAI_API_KEY,
@@ -30,9 +32,30 @@ _ENDPOINTS: dict[str, OpenAICompatibleProvider] = {
     "nvidia": OpenAICompatibleProvider(
         "nvidia", NVIDIA_API_KEY, NVIDIA_BASE_URL, key_env="NVIDIA_API_KEY"
     ),
+    "groq": OpenAICompatibleProvider(
+        "groq", GROQ_API_KEY, GROQ_BASE_URL, key_env="GROQ_API_KEY"
+    ),
 }
 
-_active_id: str = DEFAULT_MODEL if get_spec(DEFAULT_MODEL) else default_spec().id
+
+def _first_available_default() -> str:
+    """Pick the default model that actually has a key configured.
+
+    The catalog's DEFAULT_MODEL is our preferred fast default (Groq), but if
+    the user hasn't added a GROQ_API_KEY yet we fall through to the next
+    available model in catalog order so Scout still starts up cleanly.
+    """
+    preferred = get_spec(DEFAULT_MODEL)
+    if preferred and _ENDPOINTS.get(preferred.endpoint) and _ENDPOINTS[preferred.endpoint].available:
+        return preferred.id
+    for spec in CATALOG:
+        ep = _ENDPOINTS.get(spec.endpoint)
+        if ep and ep.available:
+            return spec.id
+    return default_spec().id
+
+
+_active_id: str = _first_available_default()
 
 
 def _endpoint_available(spec: ModelSpec) -> bool:

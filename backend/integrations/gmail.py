@@ -59,14 +59,24 @@ def get_summary(limit: int = 3) -> dict[str, object]:
     return {"authorized": True, "unread": unread, "messages": messages}
 
 
-def send_email(to: str, subject: str, body: str) -> bool:
-    """Send an email from the authorized account."""
+def send_email(to: str, subject: str, body: str) -> tuple[bool, str]:
+    """Send an email from the authorized account.
+
+    Returns (ok, detail). detail is empty on success, or a human-readable
+    reason (missing auth, scope error, API error) on failure so the caller
+    can show the user what's actually wrong."""
     service = build_service("gmail", "v1")
     if service is None:
-        return False
-    msg = MIMEText(body)
-    msg["to"] = to
-    msg["subject"] = subject
-    raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
-    service.users().messages().send(userId="me", body={"raw": raw}).execute()
-    return True
+        return False, "not_connected"
+    try:
+        msg = MIMEText(body)
+        msg["to"] = to
+        msg["subject"] = subject
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode()
+        service.users().messages().send(userId="me", body={"raw": raw}).execute()
+        return True, ""
+    except Exception as exc:
+        # Common ones: 403 insufficient scope (only read-only granted),
+        # 400 invalid address, 429 rate limit.
+        detail = str(exc)[:240]
+        return False, detail

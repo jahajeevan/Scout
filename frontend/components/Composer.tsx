@@ -91,7 +91,7 @@ interface Props {
   models: ModelInfo[];
   active: ModelInfo | null;
   onSelectModel: (id: string) => void;
-  onSend: (text: string, web: boolean, gifs?: string[]) => void;
+  onSend: (text: string, web: boolean, gifs?: { url: string; title: string }[]) => void;
   onSendAttachments: (files: File[], previews: string[], prompt: string) => void;
   onGenerateImage: (prompt: string) => void;
   liveActive: boolean;
@@ -308,7 +308,7 @@ export default function Composer({
     }
     // GIFs (from the picker) get sent as images alongside optional text.
     if (gifAttachments.length > 0) {
-      onSend(t, webOn, gifAttachments.map((g) => g.url));
+      onSend(t, webOn, gifAttachments.map((g) => ({ url: g.url, title: g.title })));
       setGifAttachments([]);
       setDraft("");
       requestAnimationFrame(grow);

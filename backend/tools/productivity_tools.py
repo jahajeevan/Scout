@@ -30,10 +30,23 @@ async def _check_email(limit: int = 5) -> ToolResult:
 async def _send_email(to: str, subject: str, body: str) -> ToolResult:
     from backend.integrations import gmail
 
-    ok = await asyncio.to_thread(gmail.send_email, to, subject, body)
-    if not ok:
-        return ToolResult(ok=False, summary="Couldn't send — Gmail isn't connected (Settings → Connectors).")
-    return ToolResult(ok=True, summary=f"Email sent to {to}.", data={"to": to, "subject": subject})
+    ok, detail = await asyncio.to_thread(gmail.send_email, to, subject, body)
+    if ok:
+        return ToolResult(ok=True, summary=f"Email sent to {to}.", data={"to": to, "subject": subject})
+    if detail == "not_connected":
+        return ToolResult(ok=False, summary="Couldn't send — Gmail isn't connected. Open Settings → Connectors → Connect.")
+    lowered = detail.lower()
+    if "insufficient" in lowered or "scope" in lowered or "permission" in lowered or "403" in lowered:
+        return ToolResult(
+            ok=False,
+            summary=(
+                "Gmail is connected but doesn't have SEND permission. "
+                "Reconnect: Settings → Connectors → Disconnect, then Connect again "
+                "and grant \"Send email on your behalf\" when Google asks."
+            ),
+            data={"detail": detail},
+        )
+    return ToolResult(ok=False, summary=f"Send failed: {detail}", data={"detail": detail})
 
 
 async def _list_calendar(count: int = 5) -> ToolResult:

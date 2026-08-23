@@ -52,7 +52,7 @@ const BACKEND_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
 interface UseJarvis {
   connected: boolean;
   generating: boolean;
-  sendMessage: (text: string, web?: boolean, gifs?: string[]) => void;
+  sendMessage: (text: string, web?: boolean, gifs?: { url: string; title: string }[]) => void;
   stop: () => void;
   confirmAction: (approve: boolean) => void;
 }
@@ -140,7 +140,7 @@ export function useJARVIS(
   }, [connect]);
 
   const sendMessage = useCallback(
-    (text: string, web = false, gifs: string[] = []): void => {
+    (text: string, web = false, gifs: { url: string; title: string }[] = []): void => {
       const trimmed = text.trim();
       const ws = wsRef.current;
       // Allow gif-only sends: at least one of trimmed text OR gifs is required.
@@ -153,15 +153,18 @@ export function useJARVIS(
       streamIdRef.current = jarvisId;
       setGenerating(true);
 
-      // The user message carries the GIF URL(s) as `images` so the chat
-      // renders them inline. The backend gets an augmented text so Scout
-      // knows what GIF(s) the user sent — otherwise it can't react to them.
+      // The user message carries the GIF URL(s) as `images` so the chat renders
+      // them inline. The backend gets an augmented text with the GIF TITLE (not
+      // the URL) so Scout knows what the GIF depicts — the model can't fetch a
+      // URL, but a descriptive title ("Time to Party celebration") is enough to
+      // react to the vibe.
+      const gifUrls = gifs.map((g) => g.url);
       const userMsg = {
         id: userId,
         role: "user" as const,
         text: trimmed,
         streaming: false,
-        ...(gifs.length ? { images: gifs } : {}),
+        ...(gifUrls.length ? { images: gifUrls } : {}),
       };
       setMessages((prev) => [
         ...prev,
@@ -169,9 +172,13 @@ export function useJARVIS(
         { id: jarvisId, role: "jarvis", text: "", streaming: true },
       ]);
 
-      const backendText = gifs.length
-        ? `${trimmed}${trimmed ? "\n\n" : ""}[User sent a GIF: ${gifs.join(", ")}]`
-        : trimmed;
+      let backendText = trimmed;
+      if (gifs.length) {
+        const gifHint = gifs
+          .map((g) => `[The user sent you a GIF titled: "${g.title || "(untitled)"}"]`)
+          .join("\n");
+        backendText = trimmed ? `${trimmed}\n\n${gifHint}` : gifHint;
+      }
       ws.send(JSON.stringify({ message: backendText, web }));
     },
     [setMessages, idRef],
